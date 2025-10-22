@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications.resnet import ResNet101, preprocess_input
 from tensorflow.keras import layers, models, optimizers
 import pandas as pd
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
@@ -43,7 +43,7 @@ val_dir = "data/valid/valid_cropped"
 
 # DATA AUGMENTATION + NORMALIZACIÓN
 train_datagen = ImageDataGenerator(
-    rescale=1./255,          # normaliza los pixeles
+    preprocessing_function=preprocess_input,          # normaliza los pixeles
     rotation_range=15,        # rotaciones aleatorias
     width_shift_range=0.1,    # desplazamiento horizontal
     height_shift_range=0.1,   # desplazamiento vertical
@@ -52,7 +52,7 @@ train_datagen = ImageDataGenerator(
     fill_mode='nearest'       # relleno
 )
 
-val_datagen = ImageDataGenerator(rescale=1./255)
+val_datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
 
 #GENERADORES (con resize automático)
 train_generator = train_datagen.flow_from_dataframe(
@@ -79,8 +79,8 @@ val_generator = val_datagen.flow_from_dataframe(
     seed=42
 )
 
-# MODELO VGG16 (Transfer Learning)
-base_model = VGG16(
+# MODELO ResNet101 (Transfer Learning)
+base_model = ResNet101(
     weights='imagenet',
     include_top=False,
     input_shape=(224, 224, 3)
@@ -92,7 +92,7 @@ base_model.trainable = False
 #CLASIFICADOR PERSONALIZADO
 model = models.Sequential([
     base_model,
-    layers.Flatten(),
+    layers.GlobalAveragePooling2D(),
     layers.Dense(256, activation='relu'),
     layers.BatchNormalization(),
     layers.Dropout(0.5),
@@ -121,4 +121,4 @@ history = model.fit(
     epochs=20
 )
 
-model.save("vgg16_transfer_learning.h5")
+model.save("resnet_transfer_learning.h5")

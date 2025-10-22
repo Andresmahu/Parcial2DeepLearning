@@ -1,10 +1,11 @@
 import pandas as pd, numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.resnet import preprocess_input
 
 # Cargar modelo y generador test (idéntico al entrenamiento)
-model = load_model('Models/vgg16_transfer_learning.h5', compile=False)
-datagen = ImageDataGenerator(rescale=1./255)
+model = load_model('Models/resnet_transfer_learning.h5', compile=False)
+datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
 test_gen = datagen.flow_from_dataframe(
     dataframe=pd.read_csv('data/test/etiquetas_test.csv'),
     directory='data/test/test_cropped',
@@ -25,5 +26,5 @@ error_df = pd.DataFrame({
     "y_pred": y_pred[errors],
     "prob_pred": probs[errors].max(1)
 })
-error_df.to_csv("errores_modelo.csv", index=False)
+error_df.to_csv("errores_modelo_resnet.csv", index=False)
 print(f"{len(errors)} errores guardados en errores_modelo.csv")

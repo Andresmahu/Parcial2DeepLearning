@@ -4,12 +4,13 @@ import pandas as pd
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from sklearn.metrics import accuracy_score, f1_score, classification_report, confusion_matrix
+from tensorflow.keras.applications.resnet import preprocess_input
 
 # =========================
 # Paths y parámetros
 # =========================
 BEST_H5   = "mejor_modelo.h5"                 # usa el mejor por val_accuracy
-ALT_H5    = "Models/vgg16_transfer_learning.h5"      # opcional, por si quieres comparar
+ALT_H5    = "resnet_transfer_learning.h5"
 CSV_TEST  = "data/test/etiquetas_test.csv"    # columnas: filename, label
 TEST_DIR  = "data/test/test_cropped"          # carpeta base para filename relativo
 IMG_SIZE  = (224, 224)
@@ -64,7 +65,7 @@ print(f"Total imágenes test: {len(df)} | Clases presentes: {uniq.tolist()}")
 # =========================
 # Generador de test (x/255)
 # =========================
-test_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
 
 test_gen = test_datagen.flow_from_dataframe(
     dataframe=df,
@@ -106,4 +107,4 @@ out["y_pred"] = y_pred
 for i in range(probs.shape[1]):
     out[f"prob_{i}"] = probs[:, i]
 out.to_csv("eval_resultados_test_ResNet.csv", index=False)
-print("\nResultados guardados en: eval_resultados_test_ResNet.csv")
+print("\nResultados guardados en: eval_resultados_test_resnet.csv")
